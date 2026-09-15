@@ -1,6 +1,5 @@
 ﻿/*
  *  V4L2 video capture example, modified by Derek Molloy for the Logitech C920 camera
- *  Modifications, added the -F mode for H264 capture and associated help detail
  *  www.derekmolloy.ie
  *
  *  V4L2 video capture example
@@ -490,24 +489,11 @@ static void init_device(void)
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	fprintf(stderr, "Force Format %d\n", force_format);
         if (force_format) {
-		if (force_format==2){
-             		fmt.fmt.pix.width       = 1920;     
-           		fmt.fmt.pix.height      = 1080;  
-  			fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_H264;
-                	fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
+                fmt.fmt.pix.width	= 640;
+                fmt.fmt.pix.height	= 480;
+                fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+                fmt.fmt.pix.field	= V4L2_FIELD_INTERLACED;
 		}
-		else if(force_format==1){
-			fmt.fmt.pix.width	= 640;
-			fmt.fmt.pix.height	= 480;
-			fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-			fmt.fmt.pix.field	= V4L2_FIELD_INTERLACED;
-		}
-
-                if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))
-                        errno_exit("VIDIOC_S_FMT");
-
-                /* Note VIDIOC_S_FMT may change width and height. */
-        } else {
                 /* Preserve original settings as set by v4l2-ctl for example */
                 if (-1 == xioctl(fd, VIDIOC_G_FMT, &fmt))
                         errno_exit("VIDIOC_G_FMT");
@@ -581,15 +567,12 @@ static void usage(FILE *fp, int argc, char **argv)
                  "-u | --userp         Use application allocated buffers\n"
                  "-o | --output        Outputs stream to stdout\n"
                  "-f | --format        Force format to 640x480 YUYV\n"
-		 "-F | --formatH264    Force format to 1920x1080 H264\n"
                  "-c | --count         Number of frames to grab [%i] - use 0 for infinite\n"
                  "\n"
-		 "Example usage: capture -F -o -c 300 > output.raw\n"
-		 "Captures 300 frames of H264 at 1920x1080 - use raw2mpg4 script to convert to mpg4\n",
                  argv[0], dev_name, frame_count);
 }
 
-static const char short_options[] = "d:hmruofFc:";
+static const char short_options[] = "d:hmruofc:";
 
 static const struct option
 long_options[] = {
@@ -600,7 +583,6 @@ long_options[] = {
         { "userp",  no_argument,       NULL, 'u' },
         { "output", no_argument,       NULL, 'o' },
         { "format", no_argument,       NULL, 'f' },
-	{ "formatH264", no_argument,   NULL, 'F' },
         { "count",  required_argument, NULL, 'c' },
         { 0, 0, 0, 0 }
 };
@@ -650,10 +632,6 @@ int main(int argc, char **argv)
                 case 'f':
                         force_format=1;
                         break;
-
-		case 'F':
-			force_format=2;
-			break;
 
                 case 'c':
                         errno = 0;
